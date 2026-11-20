@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EcoCampus</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f0f8f1;color:#294332}
+header{background:#27834e;color:white;padding:28px}
+main{max-width:850px;margin:auto;padding:20px}
+.card{background:white;padding:22px;border-radius:15px;margin:20px 0}
+input,select,button{padding:12px;border:1px solid #ddd;border-radius:8px;margin:6px 0}
+input,select{width:100%}
+button{background:#27834e;color:white;border:0;cursor:pointer}
+.item{padding:15px;border-bottom:1px solid #eee}
+.score{font-size:28px;font-weight:bold;color:#27834e}
+</style>
+</head>
+<body>
+<header>
+<h1>🌱 EcoCampus</h1>
+<p>Small actions, greener campus.</p>
+</header>
+<main>
+<div class="card">
+<h2>Record an Eco Activity</h2>
+<input id="name" placeholder="Student name">
+<select id="activity">
+<option value="10">Recycling – 10 points</option>
+<option value="15">Campus Clean-up – 15 points</option>
+<option value="5">Reusable Bottle – 5 points</option>
+<option value="10">Tree Planting – 10 points</option>
+<option value="5">Energy Conservation – 5 points</option>
+</select>
+<input id="details" placeholder="Activity details">
+<button onclick="add()">Record Activity</button>
+</div>
+<div class="card">
+<h2>🌍 Campus Eco Points</h2>
+<p>Total points collected</p>
+<div class="score" id="total">0</div>
+</div>
+<div class="card">
+<h2>Activity Records</h2>
+<input id="search" placeholder="Search records..." oninput="render()">
+<div id="list"></div>
+</div>
+</main>
+<script>
+let data=JSON.parse(localStorage.ecoCampus||'[]');
+function save(){localStorage.ecoCampus=JSON.stringify(data);render()}
+function add(){
+let n=name.value.trim(),d=details.value.trim();
+if(!n||!d)return alert('Complete all fields');
+data.unshift({n,a:activity.options[activity.selectedIndex].text,p:Number(activity.value),d});
+name.value=details.value='';
+save();
+}
+function edit(i){
+let d=prompt('Edit activity details',data[i].d);
+if(d&&d.trim()){data[i].d=d.trim();save()}
+}
+function del(i){
+if(confirm('Delete activity record?')){data.splice(i,1);save()}
+}
+function render(){
+let q=search.value.toLowerCase();
+document.getElementById('total').textContent=data.reduce((s,x)=>s+x.p,0);
+list.innerHTML=data.map((x,i)=>({...x,i}))
+.filter(x=>(x.n+x.a+x.d).toLowerCase().includes(q))
+.map(x=>`
+<div class="item">
+<h3>🌿 ${esc(x.a)}</h3>
+<p>Student: ${esc(x.n)}</p>
+<p>${esc(x.d)}</p>
+<b>+${x.p} points</b><br>
+<button onclick="edit(${x.i})">Edit</button>
+<button onclick="del(${x.i})">Delete</button>
+</div>`).join('')||'No eco activities recorded.';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+render();
+</script>
+</body>
+</html>
